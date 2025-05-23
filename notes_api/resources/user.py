@@ -32,8 +32,10 @@ class UserResource(Resource):
             return {"errors": e.errors()}, 400
 
         user_id = get_jwt_identity()
-        user =get_user_repo().get_by_id(user_id)
-        get_user_repo().update(user)
+        user = get_user_repo().get_by_id(user_id)
+        fields_to_update = validated.model_dump(exclude_unset=True)
+        filtered_fields = {k: v for k, v in fields_to_update.items() if v is not None and v != ''}
+        get_user_repo().update(user, **filtered_fields)
         return '', 201
 
 api.add_resource(UserResource, '')

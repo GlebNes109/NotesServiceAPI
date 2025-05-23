@@ -63,8 +63,10 @@ class NoteResource(Resource):
         user_id = get_jwt_identity()
         if note.user_id != user_id:
             return {}, 403
-
-        updated_note = get_note_repo().update(note_id, title=validated.title, text=validated.text)
+        note = get_note_repo().get_by_id(note_id)
+        fields_to_update = validated.model_dump(exclude_unset=True)
+        filtered_fields = {k: v for k, v in fields_to_update.items() if v is not None and v != ''}
+        updated_note = get_note_repo().update(note, **filtered_fields)
         return {"note_id": updated_note.id}, 200
 
     @jwt_required()
